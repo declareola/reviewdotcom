@@ -77,7 +77,8 @@ export interface UserReview {
 
 export interface GroundingChunk {
   web?: {
-    uri: string;
-    title: string;
+    // Fix: Made uri and title optional to match the @google/genai SDK's GroundingChunk type.
+    uri?: string;
+    title?: string;
   };
 }

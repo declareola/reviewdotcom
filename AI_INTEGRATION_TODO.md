@@ -1,92 +1,110 @@
-### AI Integration To-Do List
+# ReviewDotCom: AI Integration Roadmap
 
-This roadmap outlines the step-by-step process for enhancing ReviewDotCom with AI, focusing on user experience, platform integrity, and deep insights.
+### Strategic Overview
+Our AI strategy is to leverage the power of Google's Gemini models to enhance user trust, provide deep and actionable insights, and create a seamless, intelligent user experience. This roadmap outlines our phased approach to integrating AI into the core of the platform.
 
 ---
 
-### 📌 Phase 1: Foundational Setup & AI-Powered Summaries
+### ✅ Phase 1: Foundational Setup & AI-Powered Summaries
 
-**Goal:** Deliver immediate, high-impact value to users by providing concise summaries of all reviews for a business. This is the quickest win and a great introduction to AI on the platform.
+**Goal:** Deliver immediate, high-impact value to users by providing concise summaries of all reviews for a business.
 
-*   **[ ] Task 1: Backend - Create AI Service Layer:**
+*   **[x] Task 1: Backend - Create AI Service Layer:**
     *   Set up the `@google/genai` SDK.
-    *   Create a dedicated service module (e.g., `aiService.ts`) to centralize all calls to the Gemini API. This will abstract the logic and make it reusable.
+    *   Created a dedicated service module (`aiService.ts`) to centralize all calls to the Gemini API.
 
-*   **[ ] Task 2: Backend - Develop Summarization Endpoint:**
-    *   Create a new API endpoint: `GET /api/business/:id/summary`.
-    *   When called, this endpoint will:
-        1.  Fetch all reviews for the specified business ID.
-        2.  Format the review texts into a clear prompt for the `gemini-2.5-flash` model. (e.g., "Summarize the key positive and negative points from the following customer reviews: [review text 1], [review text 2], ...").
-        3.  Call the Gemini API and return the generated text summary.
+*   **[x] Task 2: Backend - Develop Summarization Logic:**
+    *   Created `summarizeReviews` function in `aiService.ts`.
+    *   Formats review text into a clear prompt for the `gemini-2.5-flash` model.
+    *   Calls the Gemini API and returns the generated text summary.
 
-*   **[ ] Task 3: Frontend - Create `AISummary` Component:**
-    *   Build a new React component (`components/AISummary.tsx`).
-    *   This component will display the summary text, clearly labeled with a title like "AI-Powered Summary" and a small icon.
-    *   It must handle loading and error states gracefully.
+*   **[x] Task 3: Frontend - Create `AISummary` Component:**
+    *   Built the `AISummary.tsx` component.
+    *   Displays the summary text, clearly labeled with "AI Summary" and an icon.
+    *   Handles loading and error states.
 
-*   **[ ] Task 4: Frontend - Integrate into Business Page:**
-    *   On `pages/BusinessPage.tsx`, fetch data from the new `/summary` endpoint when the page loads.
-    *   Render the `AISummary` component in a prominent location, such as directly below the business name and star rating.
+*   **[x] Task 4: Frontend - Integrate into Business Page:**
+    *   `pages/BusinessPage.tsx` now fetches and renders the `AISummary` component prominently.
 
 ---
 
-### 📌 Phase 2: Enhancing Trust with AI-Powered Moderation
+### ⏳ Phase 2: Enhancing Trust with AI-Powered Moderation
 
 **Goal:** Improve platform integrity and reduce moderator workload by using AI to automatically flag inappropriate content *before* it goes public.
 
 *   **[ ] Task 1: Backend - Update `addReview` Logic:**
-    *   Modify the `addReview` function in the mock API.
-    *   Before saving a new review, send its text to the AI service.
+    *   Modify the `addReview` function to call the AI service before saving a new review.
 
 *   **[ ] Task 2: Backend - Engineer a Moderation Prompt:**
-    *   Create a system instruction for Gemini that asks it to check for policy violations (e.g., hate speech, spam, personal information, off-topic content).
-    *   The prompt should request a structured JSON output, like `{ "isSafe": boolean, "reason": "Contains profanity" }`.
+    *   Create a `checkReviewContent` function in the AI service.
+    *   Use a system instruction for `gemini-2.5-flash` to check for policy violations (hate speech, spam, PII).
+    *   **Technical Note:** Utilize `responseSchema` to request a structured JSON output, like `{ "isSafe": boolean, "reason": "Contains profanity" }`, for reliable processing.
 
 *   **[ ] Task 3: Backend - Implement Auto-Flagging:**
-    *   If the AI returns `isSafe: false`, the review's status in the database should be set to `reported` instead of `active`.
+    *   If the AI returns `isSafe: false`, the review's status should be set to `reported`.
     *   The `reason` from the AI should be stored with the report for the admin to see.
 
 *   **[ ] Task 4: Frontend - Enhance Admin Panel:**
     *   Update `pages/AdminPage.tsx` and `components/AdminReviewCard.tsx`.
-    *   The admin panel should now display reviews flagged by the AI.
-    *   The `AdminReviewCard` must show the AI's reason for flagging to help the human moderator make a faster, more informed decision.
+    *   The `AdminReviewCard` must display the AI's reason for flagging to help human moderators make faster, more informed decisions.
 
 ---
 
-### 📌 Phase 3: Revolutionizing Discovery with Conversational Search
+### ✅ Phase 3: Revolutionizing Discovery with Grounded Search
 
-**Goal:** Move beyond simple keyword search to a natural, intent-based search experience that provides more relevant results.
+**Goal:** Move beyond simple keyword search to a natural, intent-based search that provides more relevant, up-to-date results using Google Search.
 
-*   **[ ] Task 1: Backend - Create "Search Intent" Endpoint:**
-    *   Develop a new endpoint: `POST /api/ai-search`.
-    *   This endpoint will receive a natural language query from the user (e.g., "find a good place for lunch in Abuja that isn't too expensive").
+*   **[x] Task 1: Backend - Create "Search with Grounding" Function:**
+    *   Developed `searchWithGrounding` in `aiService.ts`.
+    *   Receives a natural language query from the user.
 
-*   **[ ] Task 2: Backend - Deconstruct Query with AI:**
-    *   Send the user's query to Gemini with a prompt designed to extract structured search criteria.
-    *   The prompt should ask for a JSON object like `{ "category": "Eatery", "city": "Abuja", "keywords": ["lunch", "good value", "not expensive"] }`.
+*   **[x] Task 2: Backend - Use Google Search Tool:**
+    *   The function sends the query to `gemini-2.5-flash` with the `googleSearch` tool enabled.
+    *   The prompt asks the model to provide a helpful answer based on current web results.
 
-*   **[ ] Task 3: Backend - Execute Intelligent Search:**
-    *   Use the structured data from the AI to perform a more targeted search. This will involve filtering by category/city and performing a full-text search on review content for the extracted keywords.
-
-*   **[ ] Task 4: Frontend - Overhaul Homepage Search Bar:**
-    *   Update `pages/HomePage.tsx`.
-    *   The main search input should now call the new `/api/ai-search` endpoint.
-    *   The UI should display the search results, perhaps with a small message explaining how the AI interpreted the query (e.g., "Showing affordable eateries for lunch in Abuja...").
+*   **[x] Task 3: Frontend - Display Grounded Results:**
+    *   `pages/SearchResultsPage.tsx` now calls this function and displays the AI-generated text.
+    *   **Compliance:** The `SourceCitations` component is used to display the `groundingChunks` (source URLs) as required by the terms of service.
 
 ---
 
-### 📌 Phase 4: Providing Deeper Insights with Sentiment Analysis
+### ⏳ Phase 4: AI-Powered Photo Analysis
 
-**Goal:** Give users an at-a-glance understanding of the overall sentiment for a business, beyond just the star rating.
+**Goal:** Make reviews richer and easier to create by automatically analyzing and captioning user-uploaded photos.
 
-*   **[ ] Task 1: Backend - Create Sentiment Analysis Endpoint:**
-    *   Create a new endpoint: `GET /api/business/:id/sentiment`.
-    *   This will fetch all reviews and send their text to Gemini, asking it to classify each as "Positive," "Negative," or "Neutral."
-    *   The endpoint will then aggregate these classifications into percentages and return them.
+*   **[ ] Task 1: Backend - Create Photo Analysis Function:**
+    *   Create `analyzeReviewPhoto` in `aiService.ts`.
+    *   The function will accept an image (as a base64 string).
 
-*   **[ ] Task 2: Frontend - Build `SentimentChart` Component:**
-    *   Create a new component (`components/SentimentChart.tsx`) to visualize the sentiment data, for example, using a simple color-coded bar chart.
+*   **[ ] Task 2: Backend - Use Multimodal Prompting:**
+    *   Send the image data along with a text prompt (e.g., "Describe this image concisely for a business review photo caption") to the `gemini-2.5-flash` model.
 
-*   **[ ] Task 3: Frontend - Integrate into Business Page:**
-    *   On `pages/BusinessPage.tsx`, fetch the sentiment data.
-    *   Render the `SentimentChart` component in the sidebar or near the other rating information to provide a quick visual summary.
+*   **[ ] Task 3: Frontend - Integrate into Review Creation:**
+    *   Update `pages/CreateReviewPage.tsx` to allow image uploads.
+    *   When an image is selected, call the `analyzeReviewPhoto` function.
+    *   Display the AI-generated caption in a text input below the image, allowing the user to edit it before submission.
+
+---
+
+### 🚀 Phase 5: Proactive Business Intelligence (Future)
+
+**Goal:** Transform the platform into a business intelligence tool by providing owners with AI-driven insights about their customer feedback.
+
+*   **[ ] Task 1: Backend - Trend Analysis Endpoint:**
+    *   Create an endpoint: `GET /api/business/:id/trends`.
+    *   This will fetch all reviews over a time period (e.g., last 3 months).
+    *   Send the reviews to Gemini with a prompt asking it to identify recurring themes, emerging issues, or common points of praise (e.g., "Analyze these reviews and identify the top 3 most frequently mentioned positive and negative topics.").
+
+*   **[ ] Task 2: Frontend - Business Dashboard UI:**
+    *   Design a new "Dashboard" section for verified business owners.
+    *   Display the AI-generated trends in a clear, actionable format (e.g., "💡 Insight: 15 reviews in October mentioned 'slow service' on weekends.").
+
+---
+
+### Key Considerations
+
+-   **Transparency:** Always clearly label content that is AI-generated (e.g., summaries, captions).
+-   **Human-in-the-Loop:** AI moderation should supplement, not replace, human oversight. The admin panel is crucial.
+-   **Privacy:** Ensure no personally identifiable information (PII) is inadvertently sent to the AI, especially from user reviews.
+-   **Cost Management:** Monitor API usage to manage costs as the user base grows.
+-   **Bias Mitigation:** Be aware of potential biases in AI models and review prompts to ensure fair and balanced outputs.
