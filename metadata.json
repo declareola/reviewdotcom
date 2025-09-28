@@ -1,0 +1,7 @@
+{
+  "name": "ReviewDotCom",
+  "description": "Nigeria's most trusted review platform where citizens can share honest feedback about businesses, services, and institutions, empowering Nigerians with information to make better decisions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
